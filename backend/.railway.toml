@@ -1,0 +1,31 @@
+[build]
+  builder = "NIXPACKS"
+
+[build.nixpacks]
+  # Explicitly set Node.js version
+  nodejs = "22"
+
+[deploy]
+  startCommand = "npm start"
+  healthcheckPath = "/health"
+  healthcheckTimeout = 100
+  restartPolicyType = "ON_FAILURE"
+  restartPolicyMaxRetries = 10
+
+[deploy.env]
+  NODE_ENV = "production"
+  
+
+
+  [build]
+  builder = "DOCKERFILE"
+
+[deploy]
+  startCommand = "npm start"
+  healthcheckPath = "/health"
+  healthcheckTimeout = 100
+  restartPolicyType = "ON_FAILURE"
+  restartPolicyMaxRetries = 10
+
+[deploy.env]
+  NODE_ENV = "production"
