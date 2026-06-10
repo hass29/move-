@@ -14,12 +14,6 @@ if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.getRandomValu
   }
 }
 
-// ✅ NOW require everything else
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-
 dotenv.config();
 const app = express();
 
@@ -54,4 +48,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`🔐 Runtime: ${typeof Bun !== 'undefined' ? 'Bun' : 'Node.js'} ${process.version}`);
-}); 
+});
