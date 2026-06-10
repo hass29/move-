@@ -75,30 +75,6 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/ledger', ledgerRoutes);
 app.use('/api/auth', authRoutes);
 
-// ✅ HEALTH CHECK ENDPOINT (REQUIRED for Railway)
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-  });
-});
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Animal Movement Gatepass API',
-    version: '1.0.0',
-    endpoints: {
-      animals: '/api/animals',
-      requests: '/api/requests',
-      ledger: '/api/ledger',
-      auth: '/api/auth',
-      health: '/health'
-    }
-  });
-});
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
