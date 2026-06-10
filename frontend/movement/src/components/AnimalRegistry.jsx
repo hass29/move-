@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = `${API_BASE_URL}/api`;
 
 const AnimalRegistry = ({ animals, refreshData, showToast }) => {
   const [editingAnimal, setEditingAnimal] = useState(null);
@@ -25,7 +26,10 @@ const AnimalRegistry = ({ animals, refreshData, showToast }) => {
         refreshData();
         showToast(`${animal.name} updated.`);
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error("Edit error:", err.response?.data);
+        showToast(`Error: ${err.response?.data?.message || "Update failed"}`);
+      });
   };
 
   const handleDelete = (animal) => {
@@ -35,7 +39,10 @@ const AnimalRegistry = ({ animals, refreshData, showToast }) => {
           refreshData();
           showToast(`${animal.name} removed.`);
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+          console.error("Delete error:", err.response?.data);
+          showToast(`Error: ${err.response?.data?.message || "Delete failed"}`);
+        });
     }
   };
 
@@ -48,14 +55,37 @@ const AnimalRegistry = ({ animals, refreshData, showToast }) => {
       const health = prompt("Health Status", "Good");
       const initCap = prompt("Initial Capacity", "10");
       
-      axios.post(`${API_URL}/animals`, {
-        name, species, unit, age, health, capacity: parseInt(initCap) || 0
-      })
-        .then(() => {
+      const animalData = {
+        name: name.trim(),
+        species: species ? species.trim() : "Unknown",
+        unit: unit ? unit.trim() : "individuals",
+        age: age ? age.trim() : "Unknown",
+        health: health ? health.trim() : "Good",
+        capacity: parseInt(initCap) || 0
+      };
+      
+      console.log("Sending animal data:", animalData);
+      
+      axios.post(`${API_URL}/animals`, animalData)
+        .then((response) => {
+          console.log("Success response:", response.data);
           refreshData();
           showToast(`New animal "${name}" registered.`);
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+          console.error("Full error:", err);
+          console.error("Error response data:", err.response?.data);
+          console.error("Error status:", err.response?.status);
+          
+          let errorMessage = "Failed to add animal";
+          if (err.response?.data?.message) {
+            errorMessage = err.response.data.message;
+          } else if (err.response?.data?.errors) {
+            errorMessage = Object.values(err.response.data.errors).join(", ");
+          }
+          
+          showToast(`Error: ${errorMessage}`);
+        });
     }
   };
 

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import { downloadPDF } from '../utils/pdfGenerator';
 
-const API_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = `${API_BASE_URL}/api`;
 
 const AdminPanel = ({ refreshData, showToast }) => {
   const [authenticated, setAuthenticated] = useState(false);
