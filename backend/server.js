@@ -38,6 +38,11 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/ledger', ledgerRoutes);
 app.use('/api/auth', authRoutes);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
