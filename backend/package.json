@@ -2,15 +2,16 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
+    "crypto-browserify": "^3.12.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^7.8.0"
+    "mongoose": "^7.8.0",
+    "node-cron": "^4.2.1"
   },
-  
   "scripts": {
-    "start": "node server.js",
+    "start": "bun server.js",
     "dev": "nodemon server.js"
   },
   "devDependencies": {

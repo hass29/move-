@@ -3,43 +3,35 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-dotenv.config();
+// Conditional crypto fix for Bun (does nothing on Node.js)
+if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.getRandomValues) {
+  try {
+    const { webcrypto } = require("node:crypto");
+    globalThis.crypto = webcrypto;
+    console.log('✅ Crypto polyfill applied');
+  } catch (err) {
+    console.log('⚠️ Crypto polyfill failed:', err.message);
+  }
+}
 
+// ✅ NOW require everything else
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config();
 const app = express();
 
-// CORS configuration
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-};
-
-app.use(cors(corsOptions));
+// Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Check Node.js version
-const requiredNodeVersion = 20;
-const currentNodeVersion = process.versions.node.split('.')[0];
-if (parseInt(currentNodeVersion) < requiredNodeVersion) {
-  console.warn(`⚠️ Warning: Node.js ${currentNodeVersion} detected. Recommended version: ${requiredNodeVersion}+`);
-}
-
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.error('❌ CRITICAL: MONGODB_URI environment variable is not set!');
-  console.error('Please add it in Railway dashboard');
-  process.exit(1);
-}
-
-mongoose.connect(MONGODB_URI)
-.then(() => console.log('✅ MongoDB connected successfully'))
-.catch(err => {
-  console.error('❌ MongoDB connection error:', err);
-  process.exit(1);
-});
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/animal_moves')
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Routes
 const animalRoutes = require('./routes/animals');
@@ -52,44 +44,14 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/ledger', ledgerRoutes);
 app.use('/api/auth', authRoutes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    nodeVersion: process.version,
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-  });
-});
-
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('❌ Error:', err.stack);
-  res.status(500).json({ 
-    message: 'Something went wrong!', 
-    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message 
-  });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
-  console.log(`📡 Node version: ${process.version}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received: closing server...');
-  server.close(() => {
-    mongoose.connection.close(false, () => {
-      console.log('✅ Connections closed');
-      process.exit(0);
-    });
-  });
-});
+  console.log(`🔐 Runtime: ${typeof Bun !== 'undefined' ? 'Bun' : 'Node.js'} ${process.version}`);
+}); 
