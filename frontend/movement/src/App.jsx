@@ -7,7 +7,9 @@ import MyRequests from './components/MyRequests';
 import MovementLedger from './components/MovementLedger';
 import AdminPanel from './components/AdminPanel';
 
-const API_URL = 'http://localhost:5000/api';
+// ✅ FIXED: Use environment variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = `${API_BASE_URL}/api`;
 
 function App() {
   const [activeTab, setActiveTab] = useState('inv');
